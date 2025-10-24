@@ -17,6 +17,8 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Inventory;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Locale;
+
 public class ATMScreen extends AbstractContainerScreen<ATMMenu> {
 
     private EditBox denomBox, countBox, totalBox;
@@ -413,7 +415,9 @@ public class ATMScreen extends AbstractContainerScreen<ATMMenu> {
         String name = (mc.player != null) ? mc.player.getGameProfile().getName() : "Player";
         g.drawString(this.font, "Welcome " + name + "!", r.x, r.y, 0xFFFFFFFF, false);
 
-        String bal = (balance < 0) ? "Balance: —" : "Balance: " + Config.CURRENCY_SYMBOL.get() + balance;
+        String bal = (balance < 0)
+                ? "Balance: —"
+                : "Balance: " + Config.CURRENCY_SYMBOL.get() + fmt(balance);
         g.drawString(this.font, bal, r.x, r.y + 12, 0xC0C0C0, false);
 
         int startY = r.y + 36;
@@ -1048,5 +1052,9 @@ public class ATMScreen extends AbstractContainerScreen<ATMMenu> {
         int tx = x0 + (boxW - textW) / 2;
         int ty = y0 + (boxH - this.font.lineHeight) / 2;
         g.drawString(this.font, statusText, tx, ty, statusColor, false);
+    }
+
+    private static String fmt(int n) {
+        return String.format(Locale.US, "%,d", n);
     }
 }

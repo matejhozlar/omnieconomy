@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 
 public record ATMBalancePayload(int balance) implements CustomPacketPayload {
     public static final Type<ATMBalancePayload> TYPE =
-            new Type<>(ResourceLocation.fromNamespaceAndPath("createringtoncurrency", "atm_balance"));
+            new Type<>(ResourceLocation.fromNamespaceAndPath("omnieconomy", "atm_balance"));
 
     public static final StreamCodec<ByteBuf, ATMBalancePayload> STREAM_CODEC =
             StreamCodec.composite(

@@ -6,6 +6,8 @@ import com.saunhardy.omnieconomy.client.ClientOnlyHooks;
 import com.saunhardy.omnieconomy.command.MoneyCommands;
 import com.saunhardy.omnieconomy.datagen.DataGenerators;
 import com.saunhardy.omnieconomy.enchantment.ModEnchantmentEffects;
+import com.saunhardy.omnieconomy.events.StockTickerIntegration;
+import com.saunhardy.omnieconomy.item.BankCardItem;
 import com.saunhardy.omnieconomy.menu.ATMMenu;
 import com.saunhardy.omnieconomy.mobdrops.MobDrops;
 import com.saunhardy.omnieconomy.network.ATMNetworking;
@@ -22,6 +24,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -55,6 +58,7 @@ public class OmniEconomy {
     public static final DeferredItem<Item> BILL_1000 = ITEMS.register("bill_1000", () -> new Item(new Item.Properties().stacksTo(64)));
     public static final DeferredItem<Item> CIRCUIT_BOARD = ITEMS.register("circuit_board", () -> new Item(new Item.Properties().stacksTo(64)));
     public static final DeferredItem<Item> KEYPAD = ITEMS.register("keypad", () -> new Item(new Item.Properties().stacksTo(64)));
+    public static final DeferredItem<BankCardItem> BANK_CARD = ITEMS.register("bank_card", () -> new BankCardItem(new Item.Properties().stacksTo(1)));
 
     public static final DeferredBlock<ATMBlock> ATM_BLOCK = BLOCKS.register("atm", () ->
             new ATMBlock(BlockBehaviour.Properties.of()
@@ -89,6 +93,7 @@ public class OmniEconomy {
                         out.accept(BILL_1000.get());
                         out.accept(CIRCUIT_BOARD.get());
                         out.accept(KEYPAD.get());
+                        out.accept(BANK_CARD.get());
                     })
                     .build()
             );
@@ -118,6 +123,11 @@ public class OmniEconomy {
         if (FMLEnvironment.dist == Dist.DEDICATED_SERVER) {
             NeoForge.EVENT_BUS.register(MobDrops.class);
             NeoForge.EVENT_BUS.register(MoneyCommands.class);
+        }
+
+        if (ModList.get().isLoaded("create")) {
+            NeoForge.EVENT_BUS.register(StockTickerIntegration.class);
+            LOGGER.info("Create mod detected - Stock Ticker integration enabled");
         }
     }
 
