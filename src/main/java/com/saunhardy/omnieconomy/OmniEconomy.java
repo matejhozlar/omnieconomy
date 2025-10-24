@@ -1,15 +1,23 @@
 package com.saunhardy.omnieconomy;
 
 import com.mojang.logging.LogUtils;
+import com.saunhardy.omnieconomy.command.MoneyCommands;
+import com.saunhardy.omnieconomy.datagen.DataGenerators;
+import com.saunhardy.omnieconomy.enchantment.ModEnchantmentEffects;
+import com.saunhardy.omnieconomy.mobdrops.MobDrops;
+import com.saunhardy.omnieconomy.reward.PlaytimeRewardsManager;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
+import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -60,10 +68,21 @@ public class OmniEconomy {
     public OmniEconomy(IEventBus modEventBus, ModContainer modContainer) {
         modEventBus.addListener(this::commonSetup);
 
+        modEventBus.addListener(DataGenerators::gatherData);
+
         ITEMS.register(modEventBus);
         CREATIVE_MODE_TABS.register(modEventBus);
 
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+
+        ModEnchantmentEffects.register(modEventBus);
+
+        NeoForge.EVENT_BUS.register(PlaytimeRewardsManager.class);
+
+        if (FMLEnvironment.dist == Dist.DEDICATED_SERVER) {
+            NeoForge.EVENT_BUS.register(MobDrops.class);
+            NeoForge.EVENT_BUS.register(MoneyCommands.class);
+        }
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) { LOGGER.info("OmniEconomy: common setup"); }

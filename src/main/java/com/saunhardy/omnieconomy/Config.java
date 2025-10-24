@@ -7,20 +7,25 @@ public class Config {
 
     public static final ModConfigSpec.ConfigValue<String> CURRENCY_SYMBOL;
     public static final ModConfigSpec.IntValue COMMAND_COOLDOWN_MS;
-    public static final ModConfigSpec.BooleanValue ENABLE_DEPOSIT_WITHDRAW_COMMANDS;
     public static final ModConfigSpec.IntValue BALTOP_SIZE;
 
     public static final ModConfigSpec.IntValue MAX_BALANCE;
-    public static final ModConfigSpec.BooleanValue ENABLE_NEGATIVE_BALANCES;
+
+    public static final ModConfigSpec.BooleanValue ENABLE_MONEY_COMMAND;
+    public static final ModConfigSpec.BooleanValue ENABLE_PAY_COMMAND;
+    public static final ModConfigSpec.BooleanValue ENABLE_BALTOP_COMMAND;
+    public static final ModConfigSpec.BooleanValue ENABLE_DEPOSIT_COMMAND;
+    public static final ModConfigSpec.BooleanValue ENABLE_WITHDRAW_COMMAND;
 
     public static final ModConfigSpec.BooleanValue ENABLE_DAILY_REWARDS;
     public static final ModConfigSpec.IntValue DAILY_REWARD_AMOUNT;
-    public static final ModConfigSpec.IntValue DAILY_REWARD_COOLDOWN_MINUTES;
 
     public static final ModConfigSpec.BooleanValue ENABLE_PLAYTIME_REWARDS;
     public static final ModConfigSpec.IntValue PLAYTIME_REWARD_AMOUNT;
     public static final ModConfigSpec.IntValue PLAYTIME_REWARD_INTERVAL_SECONDS;
     public static final ModConfigSpec.IntValue PLAYTIME_DAILY_CAP;
+    public static final ModConfigSpec.BooleanValue NOTIFY_ON_PLAYTIME_REWARD;
+    public static final ModConfigSpec.ConfigValue<String> PLAYTIME_REWARD_MESSAGE_FORMAT;
 
     public static final ModConfigSpec.BooleanValue ENABLE_MOB_DROPS;
     public static final ModConfigSpec.BooleanValue ENABLE_MOB_DROPS_LIMIT;
@@ -33,6 +38,10 @@ public class Config {
     public static final ModConfigSpec.DoubleValue DROP_WITHER_SKELETON_1;
     public static final ModConfigSpec.DoubleValue DROP_BLAZE_1;
     public static final ModConfigSpec.DoubleValue RARE_FIVE_DOLLAR_CHANCE;
+
+    public static final ModConfigSpec.DoubleValue CAPITALIST_GREED_1;
+    public static final ModConfigSpec.DoubleValue CAPITALIST_GREED_2;
+    public static final ModConfigSpec.DoubleValue CAPITALIST_GREED_3;
 
     public static final ModConfigSpec.BooleanValue ENABLE_LOTTERY;
     public static final ModConfigSpec.IntValue LOTTERY_MIN_BET;
@@ -58,10 +67,6 @@ public class Config {
                 .comment("Global cooldown (milliseconds) for economy commands like /money, /pay, etc.")
                 .defineInRange("commandCooldownMs", 5000, 0, 60_000);
 
-        ENABLE_DEPOSIT_WITHDRAW_COMMANDS = BUILDER
-                .comment("If false, /deposit and /withdraw will NOT be registered.")
-                .define("enableWithdrawCommands", true);
-
         BALTOP_SIZE = BUILDER
                 .comment("Number of entries to show for /baltop")
                 .defineInRange("baltopSize", 10, 1, 1000);
@@ -74,9 +79,29 @@ public class Config {
                 .comment("Maximum allowed balance for any account. Use large value to effectively disable.")
                 .defineInRange("maxBalance", 2_000_000_000, 0, Integer.MAX_VALUE);
 
-        ENABLE_NEGATIVE_BALANCES = BUILDER
-                .comment("Allow accounts to go negative (useful for credit/loans).")
-                .define("allowNegativeBalances", false);
+        BUILDER.pop();
+
+        BUILDER.push("commands");
+
+        ENABLE_MONEY_COMMAND = BUILDER
+                .comment("If false, /money will NOT be registered.")
+                .define("enableMoneyCommand", true);
+
+        ENABLE_PAY_COMMAND = BUILDER
+                .comment("If false, /pay will NOT be registered.")
+                .define("enablePayCommand", true);
+
+        ENABLE_BALTOP_COMMAND = BUILDER
+                .comment("If false, /baltop will NOT be registered.")
+                .define("enableBaltopCommand", true);
+
+        ENABLE_DEPOSIT_COMMAND = BUILDER
+                .comment("If false, /deposit will NOT be registered.")
+                .define("enableDepositCommand", false);
+
+        ENABLE_WITHDRAW_COMMAND = BUILDER
+                .comment("If false, /withdraw will NOT be registered.")
+                .define("enableWithdrawCommand", false);
 
         BUILDER.pop();
 
@@ -89,10 +114,6 @@ public class Config {
         DAILY_REWARD_AMOUNT = BUILDER
                 .comment("Amount granted by /daily when available.")
                 .defineInRange("amount", 100, 0, 1_000_000);
-
-        DAILY_REWARD_COOLDOWN_MINUTES = BUILDER
-                .comment("Cooldown between /daily claims (minutes).")
-                .defineInRange("cooldownMinutes", 1440, 0, 100_000);
 
         BUILDER.pop();
 
@@ -112,8 +133,19 @@ public class Config {
 
         PLAYTIME_DAILY_CAP = BUILDER
                 .comment("Daily cap (per player) for playtime payouts. Set 0 to disable.")
-                        .defineInRange("dailyCap", 1_000, 0, 100_000_000);
+                .defineInRange("dailyCap", 1_000, 0, 100_000_000);
 
+        NOTIFY_ON_PLAYTIME_REWARD = BUILDER
+                .comment("Send a system message to a player every time he earns rewards.")
+                .define("playtimeRewardNotification", true);
+
+        PLAYTIME_REWARD_MESSAGE_FORMAT = BUILDER
+                .comment("""
+                     Format for the notification. Uses String.format with two args:
+                     %s = currency symbol, %d = credited amount (integer).
+                     Examples: "You received %s%d for being active!", "+%s%d"
+                     """)
+                .define("messageFormat", "You received %s%d for being active!");
 
         BUILDER.pop();
 
@@ -165,6 +197,22 @@ public class Config {
 
         BUILDER.pop();
 
+        BUILDER.push("enchantment");
+
+        CAPITALIST_GREED_1 = BUILDER
+                .comment("Percentage chance increase for Capitalist Greed I")
+                .defineInRange("capitalistGreedI",5.0, 0.0, 100.0);
+
+        CAPITALIST_GREED_2 = BUILDER
+                .comment("Percentage chance increase for Capitalist Greed II")
+                .defineInRange("capitalistGreedII", 8.0, 0.0, 100.0);
+
+        CAPITALIST_GREED_3 = BUILDER
+                .comment("Percentage chance increase for Capitalist Greed III")
+                .defineInRange("capitalistGreedIII", 10.0, 0.0, 100.0);
+
+        BUILDER.pop();
+
         BUILDER.push("lottery");
 
         ENABLE_LOTTERY = BUILDER
@@ -196,7 +244,7 @@ public class Config {
                 .define("enableBackups", true);
 
         MAX_BACKUP_FILES = BUILDER
-                .comment("Maximum number of backup files to keep (per world).")
+                .comment("Maximum number of backup files to keep.")
                 .defineInRange("maxBackupFiles", 5, 0, 1000);
 
         BUILDER.pop();
