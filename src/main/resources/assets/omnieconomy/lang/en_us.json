@@ -1,13 +1,21 @@
 {
-  "itemGroup.omnieconomy": "Example Mod Tab",
-  "block.omnieconomy.example_block": "Example Block",
-  "item.omnieconomy.example_item": "Example Item",
-
-  "omnieconomy.configuration.title": "OmniEconomy Configs",
-  "omnieconomy.configuration.section.omnieconomy.common.toml": "OmniEconomy Configs",
-  "omnieconomy.configuration.section.omnieconomy.common.toml.title": "OmniEconomy Configs",
-  "omnieconomy.configuration.items": "Item List",
-  "omnieconomy.configuration.logDirtBlock": "Log Dirt Block",
-  "omnieconomy.configuration.magicNumberIntroduction": "Magic Number Text",
-  "omnieconomy.configuration.magicNumber": "Magic Number"
+  "itemGroup.omnieconomy": "OmniEconomy",
+  "block.omnieconomy.atm": "ATM",
+  "menu.omnieconomy.atm": "ATM",
+  "item.omnieconomy.bill_1": "$1 Bill",
+  "item.omnieconomy.bill_5": "$5 Bill",
+  "item.omnieconomy.bill_10": "$10 Bill",
+  "item.omnieconomy.bill_20": "$20 Bill",
+  "item.omnieconomy.bill_50": "$50 Bill",
+  "item.omnieconomy.bill_100": "$100 Bill",
+  "item.omnieconomy.bill_500": "$500 Bill",
+  "item.omnieconomy.bill_1000": "$1000 Bill",
+  "item.omnieconomy.bank_card": "Bank Card",
+  "enchantment.omnieconomy.capitalist_greed": "Capitalist Greed",
+  "item.omnieconomy.circuit_board": "Circuit Board",
+  "item.omnieconomy.card_reader": "Card Reader",
+  "item.omnieconomy.keypad": "Keypad",
+  "message.omnieconomy.withdrawal_success": "Withdrew %d x %s bills from your account",
+  "message.omnieconomy.withdrawal_failed": "Failed to withdraw bills from your account",
+  "message.omnieconomy.insufficient_inventory_space": "Not enough inventory space!"
 }
