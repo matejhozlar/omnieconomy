@@ -42,5 +42,5 @@ jobs:
           files: build/libs/!(*-@(dev|sources|javadoc)).jar
           java: 21
 
-          curseforge-id: 1318335
+          curseforge-id: 1371365
           curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
