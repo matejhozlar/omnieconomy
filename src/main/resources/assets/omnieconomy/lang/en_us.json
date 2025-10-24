@@ -1,0 +1,13 @@
+{
+  "itemGroup.omnieconomy": "Example Mod Tab",
+  "block.omnieconomy.example_block": "Example Block",
+  "item.omnieconomy.example_item": "Example Item",
+
+  "omnieconomy.configuration.title": "OmniEconomy Configs",
+  "omnieconomy.configuration.section.omnieconomy.common.toml": "OmniEconomy Configs",
+  "omnieconomy.configuration.section.omnieconomy.common.toml.title": "OmniEconomy Configs",
+  "omnieconomy.configuration.items": "Item List",
+  "omnieconomy.configuration.logDirtBlock": "Log Dirt Block",
+  "omnieconomy.configuration.magicNumberIntroduction": "Magic Number Text",
+  "omnieconomy.configuration.magicNumber": "Magic Number"
+}
