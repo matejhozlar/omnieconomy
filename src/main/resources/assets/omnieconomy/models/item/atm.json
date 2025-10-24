@@ -1,5 +1,5 @@
 {
-  "parent": "createringtoncurrency:block/atm",
+  "parent": "omnieconomy:block/atm",
   "display": {
     "ground": {
       "scale": [0.5, 0.5, 0.5],

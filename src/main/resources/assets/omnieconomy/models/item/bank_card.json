@@ -1,6 +1,6 @@
 {
 	"parent": "item/generated",
 	"textures": {
-    	"layer0": "createringtoncurrency:item/bank_card"
+    	"layer0": "omnieconomy:item/bank_card"
   	}
 }

@@ -1,6 +1,6 @@
 {
   "parent": "item/generated",
   "textures": {
-    "layer0": "createringtoncurrency:item/circuit_board"
+    "layer0": "omnieconomy:item/circuit_board"
   }
 }

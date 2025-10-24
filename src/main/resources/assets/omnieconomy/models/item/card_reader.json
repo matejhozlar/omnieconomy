@@ -1,6 +1,6 @@
 {
   "parent": "item/generated",
   "textures": {
-    "layer0": "createringtoncurrency:item/card_reader"
+    "layer0": "omnieconomy:item/card_reader"
   }
 }

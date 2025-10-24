@@ -1,6 +1,6 @@
 {
   "parent": "item/generated",
   "textures": {
-    "layer0": "createringtoncurrency:item/bill_10"
+    "layer0": "omnieconomy:item/bill_10"
   }
 }
