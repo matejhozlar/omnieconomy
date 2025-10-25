@@ -3,9 +3,11 @@ package com.saunhardy.omnieconomy.network;
 import com.saunhardy.omnieconomy.Config;
 import com.saunhardy.omnieconomy.OmniEconomy;
 import com.saunhardy.omnieconomy.client.ATMScreen;
+import com.saunhardy.omnieconomy.client.ui.UiColors;
 import com.saunhardy.omnieconomy.core.Economy;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -44,9 +46,9 @@ public final class ATMNetworking {
         ctx.enqueueWork(() -> {
             if (mc.screen instanceof ATMScreen scr) {
                 int color = switch (pkt.kind()) {
-                    case 1 -> 0x2ECC71;
-                    case 2 -> 0xE74C3C;
-                    default -> 0xFFFFFF;
+                    case 1 -> UiColors.SUCCESS_RGB;
+                    case 2 -> UiColors.ERROR_RGB;
+                    default -> UiColors.DEFAULT_RGB;
                 };
                 scr.showStatus(pkt.message(), color);
             } else if (mc.player != null) {
@@ -101,11 +103,22 @@ public final class ATMNetworking {
                     player.getInventory().setItem(slot, ItemStack.EMPTY);
                 }
             }
-            player.inventoryMenu.broadcastChanges();
 
             Economy.deposit(player.server, player.getUUID(), total);
 
-            sendResult(player, 1, "Deposited " + Config.CURRENCY_SYMBOL.get() + total);
+            player.getInventory().setChanged();
+            player.containerMenu.slotsChanged(player.getInventory());
+            player.containerMenu.broadcastChanges();
+            player.inventoryMenu.broadcastChanges();
+
+            player.connection.send(new ClientboundContainerSetContentPacket(
+                    player.inventoryMenu.containerId,
+                    player.inventoryMenu.incrementStateId(),
+                    player.inventoryMenu.getItems(),
+                    player.inventoryMenu.getCarried()
+            ));
+
+            sendResult(player, 1, "Successfully deposited " + Config.CURRENCY_SYMBOL.get() + total);
             int bal = Economy.getBalance(player.server, player.getUUID());
             PacketDistributor.sendToPlayer(player, new ATMBalancePayload(bal));
         });
@@ -149,7 +162,16 @@ public final class ATMNetworking {
                 }
 
                 give.accept(denom, count);
-                sendResult(player, 1, "Withdrew " + Config.CURRENCY_SYMBOL.get() + total);
+                player.getInventory().setChanged();
+                player.containerMenu.slotsChanged(player.getInventory());
+                player.containerMenu.broadcastChanges();
+                player.connection.send(new ClientboundContainerSetContentPacket(
+                        player.inventoryMenu.containerId,
+                        player.inventoryMenu.incrementStateId(),
+                        player.inventoryMenu.getItems(),
+                        player.inventoryMenu.getCarried()
+                ));
+                sendResult(player, 1, "Successfully withdrew " + Config.CURRENCY_SYMBOL.get() + total);
                 int bal = Economy.getBalance(player.server, player.getUUID());
                 PacketDistributor.sendToPlayer(player, new ATMBalancePayload(bal));
             } else {
@@ -183,11 +205,30 @@ public final class ATMNetworking {
                 for (var e : bundle.entrySet()) {
                     give.accept(e.getKey(), e.getValue());
                 }
-                sendResult(player, 1, "Withdrawal complete (" + Config.CURRENCY_SYMBOL.get() + total + ")");
+
+                player.getInventory().setChanged();
+                player.containerMenu.slotsChanged(player.getInventory());
+                player.containerMenu.broadcastChanges();
+                player.connection.send(new ClientboundContainerSetContentPacket(
+                        player.inventoryMenu.containerId,
+                        player.inventoryMenu.incrementStateId(),
+                        player.inventoryMenu.getItems(),
+                        player.inventoryMenu.getCarried()
+                ));
+                sendResult(player, 1, "Successfully withdrew " + Config.CURRENCY_SYMBOL.get() + total);
                 int bal = Economy.getBalance(player.server, player.getUUID());
                 PacketDistributor.sendToPlayer(player, new ATMBalancePayload(bal));
             }
         });
+    }
+
+    private static boolean isBill(ItemStack st) {
+        return !st.isEmpty() && (
+                st.is(OmniEconomy.BILL_1.get())   || st.is(OmniEconomy.BILL_5.get())   ||
+                        st.is(OmniEconomy.BILL_10.get())  || st.is(OmniEconomy.BILL_20.get())  ||
+                        st.is(OmniEconomy.BILL_50.get())  || st.is(OmniEconomy.BILL_100.get()) ||
+                        st.is(OmniEconomy.BILL_500.get()) || st.is(OmniEconomy.BILL_1000.get())
+        );
     }
 
     private static void sendResult(ServerPlayer player, int kind, String msg) {

@@ -1,6 +1,7 @@
 package com.saunhardy.omnieconomy.client;
 
 import com.saunhardy.omnieconomy.Config;
+import com.saunhardy.omnieconomy.client.ui.UiColors;
 import com.saunhardy.omnieconomy.menu.ATMMenu;
 import com.saunhardy.omnieconomy.network.ATMDepositPayload;
 import com.saunhardy.omnieconomy.network.ATMQueryBalancePayload;
@@ -21,15 +22,16 @@ import java.util.Locale;
 
 public class ATMScreen extends AbstractContainerScreen<ATMMenu> {
 
-    private EditBox denomBox, countBox, totalBox;
+    private EditBox totalBox;
 
     private final EditBox[] bundleBoxes = new EditBox[8];
 
     private int wtSel = -1;
     private Rect hitWTAct, hitWTBack;
 
-    private int wsSel = -1;
-    private Rect hitWSAct, hitWSBack;
+    private int pendingBundleTotal = 0;
+    private int pendingBundleTicks = 0;
+    private boolean suppressStatus = false;
 
     private int wbSel = -1;
     private Rect hitWBAct, hitWBBack;
@@ -49,7 +51,6 @@ public class ATMScreen extends AbstractContainerScreen<ATMMenu> {
         DEPOSIT,
         WITHDRAW_MENU,
         WITHDRAW_TOTAL,
-        WITHDRAW_SINGLE,
         WITHDRAW_BUNDLE
     }
     private View view = View.HOME;
@@ -61,14 +62,24 @@ public class ATMScreen extends AbstractContainerScreen<ATMMenu> {
     private Rect hitDepAll, hitBack;
 
     private int withdrawSel = 0;
-    private Rect hitWTotal, hitWSingle, hitWBundle, hitWBack;
+    private Rect hitWTotal;
+    private Rect hitWBundle;
+    private Rect hitWBack;
 
     private int balance = -1;
     public void updateBalance(int v) { this.balance = v; }
 
-    private static final int KEY_UP=265, KEY_DOWN=264, KEY_LEFT=263, KEY_RIGHT=262,
-            KEY_ENTER=257, KEY_SPACE=32, KEY_E=69, KEY_ESCAPE=256,
-            KEY_W=87, KEY_S=83, KEY_A=65, KEY_D=68, KEY_BACKSPACE=259;
+    private static final int KEY_UP=265;
+    private static final int KEY_DOWN=264;
+    private static final int KEY_RIGHT=262;
+    private static final int KEY_ENTER=257;
+    private static final int KEY_SPACE=32;
+    private static final int KEY_E=69;
+    private static final int KEY_ESCAPE=256;
+    private static final int KEY_W=87;
+    private static final int KEY_S=83;
+    private static final int KEY_D=68;
+    private static final int KEY_BACKSPACE=259;
 
     private static final ResourceLocation ATM_BG =
             ResourceLocation.fromNamespaceAndPath("omnieconomy", "textures/gui/atm_bg.png");
@@ -90,6 +101,9 @@ public class ATMScreen extends AbstractContainerScreen<ATMMenu> {
     private static final int BTN_MAX_W = 240;
     private static final int BTN_H = 20;
     private static final int BTN_X_PAD = 8;
+
+    private static final int COLOR_SUCCESS = UiColors.SUCCESS_RGB;
+    private static final int COLOR_INFO    = UiColors.INFO_ARGB;
 
     private static int clamp(int v) { return Math.max(ATMScreen.BTN_MIN_W, Math.min(ATMScreen.BTN_MAX_W, v)); }
     private int uniformButtonW(Rect r) { return clamp(r.w - 2 * BTN_X_PAD); }
@@ -134,6 +148,7 @@ public class ATMScreen extends AbstractContainerScreen<ATMMenu> {
     }
 
     public void showStatus(String msg, int color) {
+        if (suppressStatus) return;
         this.statusText = msg;
         this.statusColor = color;
         this.statusTicks = 60;
@@ -153,15 +168,6 @@ public class ATMScreen extends AbstractContainerScreen<ATMMenu> {
         int label1Y  = y0 + 20 + GAP;
         int fields1Y = label1Y + LABEL_TO_FIELD;
 
-        int boxW = Math.max(48, (r.w - 72 - PAD*3) / 2);
-        denomBox = new EditBox(this.font, r.x,              fields1Y, boxW, FIELD_H, Component.empty());
-        countBox = new EditBox(this.font, r.x + boxW + PAD, fields1Y, boxW, FIELD_H, Component.empty());
-        for (EditBox eb : bundleBoxes) {
-            if (eb != null) eb.setSuggestion("0");
-        }
-        addRenderableWidget(denomBox);
-        addRenderableWidget(countBox);
-
         int label2Y  = fields1Y + FIELD_H + GAP;
         int fields2Y = label2Y + LABEL_TO_FIELD;
 
@@ -178,32 +184,20 @@ public class ATMScreen extends AbstractContainerScreen<ATMMenu> {
             bundleBoxes[i] = eb;
             addRenderableWidget(eb);
         }
-
-        denomBox.setFilter(s -> s.matches("\\d{0,5}"));
-        countBox.setFilter(s -> s.matches("\\d{0,4}"));
         totalBox.setFilter(s -> s.matches("\\d{0,9}"));
 
-        attachPlaceholder(denomBox, "Denomination");
-        attachPlaceholder(countBox, "Count");
         attachPlaceholder(totalBox, "Enter amount");
         for (EditBox eb : bundleBoxes) {
             if (eb != null) attachPlaceholder(eb, "0");
         }
-
-        int _label1Y = label1Y - this.topPos;
-        int _label2Y = label2Y - this.topPos;
 
         setView(View.HOME);
         setUiForView();
     }
 
     private void setUiForView() {
-        boolean vSingle  = (view == View.WITHDRAW_SINGLE);
         boolean vTotal   = (view == View.WITHDRAW_TOTAL);
         boolean vBundle  = (view == View.WITHDRAW_BUNDLE);
-
-        if (denomBox != null) { denomBox.visible = vSingle; denomBox.setEditable(vSingle); }
-        if (countBox != null) { countBox.visible = vSingle; countBox.setEditable(vSingle); }
 
         if (totalBox != null) { totalBox.visible = vTotal;  totalBox.setEditable(vTotal); }
 
@@ -233,7 +227,6 @@ public class ATMScreen extends AbstractContainerScreen<ATMMenu> {
 
         switch (v) {
             case WITHDRAW_TOTAL  -> { wtSel = -1; focus(totalBox); }
-            case WITHDRAW_SINGLE -> { wsSel = -1; focus(denomBox); } // or focus(countBox) if you prefer
             case WITHDRAW_BUNDLE -> { bundleScroll = 0; wbSel = -1; if (bundleBoxes[DENOMS.length - 1] != null) focus(bundleBoxes[DENOMS.length - 1]);}
             default -> {}
         }
@@ -243,7 +236,6 @@ public class ATMScreen extends AbstractContainerScreen<ATMMenu> {
     private void goDeposit()         { setView(View.DEPOSIT); }
     private void goWithdrawMenu()    { setView(View.WITHDRAW_MENU); }
     private void goWithdrawTotal()   { setView(View.WITHDRAW_TOTAL); }
-    private void goWithdrawSingle()  { setView(View.WITHDRAW_SINGLE); }
     private void goWithdrawBundle()  { setView(View.WITHDRAW_BUNDLE); }
 
     private void requestBalance() {
@@ -288,8 +280,6 @@ public class ATMScreen extends AbstractContainerScreen<ATMMenu> {
 
     private void clearTextFocus() {
         this.setFocused(null);
-        if (denomBox != null)  denomBox.setFocused(false);
-        if (countBox != null)  countBox.setFocused(false);
         if (totalBox != null)  totalBox.setFocused(false);
         for (EditBox eb : bundleBoxes) if (eb != null) eb.setFocused(false);
     }
@@ -301,15 +291,6 @@ public class ATMScreen extends AbstractContainerScreen<ATMMenu> {
             eb.setFocused(true);
             eb.setCursorPosition(eb.getValue().length());
         }
-    }
-
-    private void performWithdrawSingle() {
-        try {
-            int d = Integer.parseInt(denomBox.getValue().trim());
-            int c = Integer.parseInt(countBox.getValue().trim());
-            var conn = Minecraft.getInstance().getConnection();
-            if (conn != null) conn.send(new ServerboundCustomPayloadPacket(new ATMWithdrawPayload(0, d, c)));
-        } catch (Exception ignored) {}
     }
 
     private void performWithdrawTotal() {
@@ -324,18 +305,35 @@ public class ATMScreen extends AbstractContainerScreen<ATMMenu> {
         var conn = Minecraft.getInstance().getConnection();
         if (conn == null) return;
 
+        int total = 0;
+        java.util.ArrayList<int[]> ops = new java.util.ArrayList<>();
+
         for (int i = 0; i < DENOMS.length; i++) {
             String v = bundleBoxes[i].getValue().trim();
-            if (!v.isEmpty()) {
-                try {
-                    int count = Integer.parseInt(v);
-                    if (count > 0) {
-                        conn.send(new ServerboundCustomPayloadPacket(new ATMWithdrawPayload(0, DENOMS[i], count)));
-                    }
-                } catch (Exception ignored) {}
-            }
+            if (v.isEmpty()) continue;
+            try {
+                int count = Integer.parseInt(v);
+                if (count > 0) {
+                    ops.add(new int[]{DENOMS[i], count});
+                    total += DENOMS[i] * count;
+                }
+            } catch (Exception ignored) {}
         }
+        if (ops.isEmpty()) return;
+
+        showStatus("Processing…", COLOR_INFO);
         clickSound();
+
+        suppressStatus = true;
+
+        for (int[] op : ops) {
+            conn.send(new ServerboundCustomPayloadPacket(new ATMWithdrawPayload(0, op[0], op[1])));
+        }
+
+        pendingBundleTotal = total;
+        pendingBundleTicks = 6;
+
+        for (EditBox eb : bundleBoxes) if (eb != null) eb.setValue("");
     }
 
     @Override
@@ -343,6 +341,15 @@ public class ATMScreen extends AbstractContainerScreen<ATMMenu> {
         super.containerTick();
 
         if (statusTicks > 0) statusTicks--;
+
+        if (pendingBundleTicks > 0) {
+            pendingBundleTicks--;
+            if (pendingBundleTicks == 0 && pendingBundleTotal > 0) {
+                suppressStatus = false;
+                showStatus("Successfully withdrew " + Config.CURRENCY_SYMBOL.get() + fmt(pendingBundleTotal), COLOR_SUCCESS);
+                pendingBundleTotal = 0;
+            }
+        }
 
         flowTicks++;
         switch (flow) {
@@ -384,7 +391,6 @@ public class ATMScreen extends AbstractContainerScreen<ATMMenu> {
             case DEPOSIT -> renderDeposit(g, r);
             case WITHDRAW_MENU -> renderWithdrawMenu(g, r);
             case WITHDRAW_TOTAL -> renderWithdrawTotal(g, r);
-            case WITHDRAW_SINGLE -> renderWithdrawSingle(g, r);
             case WITHDRAW_BUNDLE -> renderWithdrawBundle(g, r);
         }
     }
@@ -483,14 +489,9 @@ public class ATMScreen extends AbstractContainerScreen<ATMMenu> {
         int itemW = uniformButtonW(r);
         int x = buttonX(r);
 
-        String[] items = {
-                "Enter Amount",
-                "Choose Bills",
-                "Single Denomination",
-                "Back"
-        };
+        String[] items = { "Enter Amount", "Choose Bills", "Back" };
 
-        Rect[] hits = new Rect[4];
+        Rect[] hits = new Rect[3];
         for (int i = 0; i < items.length; i++) {
             int y = startY + i * (rowH + 8);
             boolean sel = (withdrawSel == i);
@@ -507,11 +508,9 @@ public class ATMScreen extends AbstractContainerScreen<ATMMenu> {
         }
         hitWTotal  = hits[0];
         hitWBundle = hits[1];
-        hitWSingle = hits[2];
-        hitWBack   = hits[3];
+        hitWBack   = hits[2];
 
-        String hint = "Use ↑/↓ or W/S; Enter to select";
-        g.drawString(this.font, hint, r.x, r.y + r.h - 10, 0x80A0A0A0, false);
+        g.drawString(this.font, "Use ↑/↓ or W/S; Enter to select", r.x, r.y + r.h - 10, 0x80A0A0A0, false);
     }
 
     private void renderWithdrawTotal(GuiGraphics g, Rect r) {
@@ -547,45 +546,6 @@ public class ATMScreen extends AbstractContainerScreen<ATMMenu> {
         hitWTBack = hits[1];
 
         String hint = "Type amount, then Enter on Withdraw";
-        g.drawString(this.font, hint, r.x, r.y + r.h - 10, 0x80A0A0A0, false);
-    }
-
-    private void renderWithdrawSingle(GuiGraphics g, Rect r) {
-        g.drawString(this.font, "Withdraw • Single Denomination", r.x, r.y, 0xFFFFFFFF, false);
-
-        int x = buttonX(r);
-        int rowH = BTN_H;
-        int inputY = r.y + 22;
-
-        int boxW = 84;
-        int gap = 6;
-
-        move(denomBox, x, inputY, boxW);
-        move(countBox, x + boxW + gap, inputY, boxW);
-
-        int itemW = uniformButtonW(r);
-        int yStart = inputY + 24;
-
-        String[] items = { "Withdraw", "Back" };
-        Rect[] hits = new Rect[items.length];
-
-        for (int i = 0; i < items.length; i++) {
-            int y = yStart + i * (rowH + 8);
-            boolean sel = (wsSel == i);
-            g.fill(x, y, x + itemW, y + rowH, sel ? 0xFF2B3138 : 0xFF1D2227);
-            g.fill(x, y, x + itemW, y + 1, 0x33FFFFFF);
-            g.fill(x, y + rowH - 1, x + itemW, y + rowH, 0x33000000);
-
-            String label = (sel ? "> " : "  ") + items[i];
-            int ty = y + (rowH - this.font.lineHeight) / 2;
-            g.drawString(this.font, label, x + 8, ty, 0xFFFFFFFF, false);
-
-            hits[i] = new Rect(x, y, itemW, rowH);
-        }
-        hitWSAct  = hits[0];
-        hitWSBack = hits[1];
-
-        String hint = "Fill Denom & Count, then Withdraw";
         g.drawString(this.font, hint, r.x, r.y + r.h - 10, 0x80A0A0A0, false);
     }
 
@@ -711,18 +671,12 @@ public class ATMScreen extends AbstractContainerScreen<ATMMenu> {
         if (view == View.WITHDRAW_MENU) {
             if (hitWTotal  != null && within(mx,my,hitWTotal))  { goWithdrawTotal();  return true; }
             if (hitWBundle != null && within(mx,my,hitWBundle)) { goWithdrawBundle(); return true; }
-            if (hitWSingle != null && within(mx,my,hitWSingle)) { goWithdrawSingle(); return true; }
             if (hitWBack   != null && within(mx,my,hitWBack))   { goHome();           return true; }
         }
 
         if (view == View.WITHDRAW_TOTAL) {
             if (hitWTAct  != null && within(mx,my,hitWTAct))  { performWithdrawTotal(); return true; }
             if (hitWTBack != null && within(mx,my,hitWTBack)) { goWithdrawMenu();       return true; }
-        }
-
-        if (view == View.WITHDRAW_SINGLE) {
-            if (hitWSAct  != null && within(mx,my,hitWSAct))  { performWithdrawSingle(); return true; }
-            if (hitWSBack != null && within(mx,my,hitWSBack)) { goWithdrawMenu();        return true; }
         }
 
         if (view == View.WITHDRAW_BUNDLE) {
@@ -743,8 +697,6 @@ public class ATMScreen extends AbstractContainerScreen<ATMMenu> {
     }
 
     private boolean isAnyFieldFocused() {
-        if (denomBox != null && denomBox.isFocused()) return true;
-        if (countBox != null && countBox.isFocused()) return true;
         if (totalBox != null && totalBox.isFocused()) return true;
         for (EditBox eb : bundleBoxes) {
             if (eb != null && eb.isFocused()) return true;
@@ -767,16 +719,6 @@ public class ATMScreen extends AbstractContainerScreen<ATMMenu> {
                 if (keyCode == KEY_DOWN || keyCode == KEY_S) {
                     clearTextFocus();
                     wtSel = 0;
-                    clickSound();
-                    return true;
-                }
-            }
-            if (view == View.WITHDRAW_SINGLE) {
-                boolean inputFocused = (denomBox != null && denomBox.isFocused())
-                        || (countBox != null && countBox.isFocused());
-                if (inputFocused && (keyCode == KEY_DOWN || keyCode == KEY_S)) {
-                    clearTextFocus();
-                    wsSel = 0;
                     clickSound();
                     return true;
                 }
@@ -818,7 +760,6 @@ public class ATMScreen extends AbstractContainerScreen<ATMMenu> {
             if (keyCode == KEY_ENTER || keyCode == KEY_SPACE || keyCode == KEY_E
                     || keyCode == KEY_RIGHT || keyCode == KEY_D) {
                 if (view == View.WITHDRAW_TOTAL)   { performWithdrawTotal();  return true; }
-                if (view == View.WITHDRAW_SINGLE)  { performWithdrawSingle(); return true; }
                 if (view == View.WITHDRAW_BUNDLE)  { performWithdrawBundle(); return true; }
             }
 
@@ -839,27 +780,6 @@ public class ATMScreen extends AbstractContainerScreen<ATMMenu> {
                 if ((keyCode == KEY_UP || keyCode == KEY_W) && wtSel == 0) {
                     focus(totalBox);
                     wtSel = -1;
-                    clickSound();
-                    return true;
-                }
-            }
-        }
-
-        if (view == View.WITHDRAW_SINGLE) {
-            boolean inputFocused = (denomBox != null && denomBox.isFocused())
-                    || (countBox != null && countBox.isFocused());
-
-            if (inputFocused) {
-                if (keyCode == KEY_DOWN || keyCode == KEY_S) {
-                    clearTextFocus();
-                    wsSel = 0;
-                    clickSound();
-                    return true;
-                }
-            } else {
-                if ((keyCode == KEY_UP || keyCode == KEY_W) && wsSel == 0) {
-                    if (countBox != null) focus(countBox); else focus(denomBox);
-                    wsSel = -1;
                     clickSound();
                     return true;
                 }
@@ -906,14 +826,13 @@ public class ATMScreen extends AbstractContainerScreen<ATMMenu> {
         }
 
         if (view == View.WITHDRAW_MENU) {
-            if (keyCode == KEY_UP || keyCode == KEY_W)   { withdrawSel = (withdrawSel + 4 - 1) % 4; clickSound(); return true; }
-            if (keyCode == KEY_DOWN || keyCode == KEY_S) { withdrawSel = (withdrawSel + 1) % 4; clickSound(); return true; }
+            if (keyCode == KEY_UP || keyCode == KEY_W)   { withdrawSel = (withdrawSel + 3 - 1) % 3; clickSound(); return true; }
+            if (keyCode == KEY_DOWN || keyCode == KEY_S) { withdrawSel = (withdrawSel + 1) % 3;     clickSound(); return true; }
             if (keyCode == KEY_ENTER || keyCode == KEY_SPACE || keyCode == KEY_E || keyCode == KEY_RIGHT || keyCode == KEY_D) {
                 switch (withdrawSel) {
                     case 0 -> goWithdrawTotal();
                     case 1 -> goWithdrawBundle();
-                    case 2 -> goWithdrawSingle();
-                    case 3 -> goHome();
+                    case 2 -> goHome();
                 }
                 return true;
             }
@@ -926,17 +845,6 @@ public class ATMScreen extends AbstractContainerScreen<ATMMenu> {
             if (keyCode == KEY_DOWN || keyCode == KEY_S) { wtSel = (wtSel + 1) % 2; clickSound(); return true; }
             if (keyCode == KEY_ENTER || keyCode == KEY_SPACE || keyCode == KEY_E || keyCode == KEY_RIGHT || keyCode == KEY_D) {
                 if (wtSel == 0) performWithdrawTotal(); else goWithdrawMenu();
-                return true;
-            }
-            if (keyCode == KEY_BACKSPACE) { clearTextFocus(); goWithdrawMenu(); return true; }
-            return super.keyPressed(keyCode, scanCode, modifiers);
-        }
-
-        if (view == View.WITHDRAW_SINGLE) {
-            if (keyCode == KEY_UP || keyCode == KEY_W)   { wsSel = (wsSel + 2 - 1) % 2; clickSound(); return true; }
-            if (keyCode == KEY_DOWN || keyCode == KEY_S) { wsSel = (wsSel + 1) % 2; clickSound(); return true; }
-            if (keyCode == KEY_ENTER || keyCode == KEY_SPACE || keyCode == KEY_E || keyCode == KEY_RIGHT || keyCode == KEY_D) {
-                if (wsSel == 0) performWithdrawSingle(); else goWithdrawMenu();
                 return true;
             }
             if (keyCode == KEY_BACKSPACE) { clearTextFocus(); goWithdrawMenu(); return true; }
