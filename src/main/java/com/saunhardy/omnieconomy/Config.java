@@ -47,14 +47,8 @@ public class Config {
     public static final ModConfigSpec.IntValue LOTTERY_MIN_BET;
     public static final ModConfigSpec.IntValue LOTTERY_COOLDOWN_MINUTES;
 
-    public static final ModConfigSpec.EnumValue<StorageMode> STORAGE_MODE;
     public static final ModConfigSpec.BooleanValue ENABLE_BACKUPS;
     public static final ModConfigSpec.IntValue MAX_BACKUP_FILES;
-
-    public enum StorageMode {
-        SAVED_DATA,
-        JSON
-    }
 
     static {
         BUILDER.push("general");
@@ -231,17 +225,9 @@ public class Config {
 
         BUILDER.push("persistence");
 
-        STORAGE_MODE = BUILDER
-                .comment("How to persist balances to disk:",
-                        "- SAVED_DATA: store via NeoForge SavedData (recommended).",
-                        "- JSON: store as a JSON file under the world save folder."
-                )
-                .worldRestart()
-                .defineEnum("storageMode", StorageMode.SAVED_DATA);
-
         ENABLE_BACKUPS = BUILDER
                 .comment("Write timestamped rolling backups when saving.")
-                .define("enableBackups", true);
+                .define("enableBackups", false);
 
         MAX_BACKUP_FILES = BUILDER
                 .comment("Maximum number of backup files to keep.")

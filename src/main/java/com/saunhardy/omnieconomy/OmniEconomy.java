@@ -129,6 +129,10 @@ public class OmniEconomy {
             NeoForge.EVENT_BUS.register(StockTickerIntegration.class);
             LOGGER.info("Create mod detected - Stock Ticker integration enabled");
         }
+
+        if (Config.ENABLE_BACKUPS.get()) {
+            NeoForge.EVENT_BUS.addListener(BackupHooks::onLevelSave);
+        }
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) { LOGGER.info("OmniEconomy: common setup"); }

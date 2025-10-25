@@ -97,7 +97,7 @@ public class WithdrawalHelper {
                 if (canAdd > 0) {
                     int used = Math.min(canAdd, remaining);
                     remaining -= used;
-                    if (remaining <= 0) return false;
+                    if (remaining == 0) return false;
                 }
             }
         }
