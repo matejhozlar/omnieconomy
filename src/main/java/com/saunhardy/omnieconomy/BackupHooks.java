@@ -13,6 +13,7 @@ public class BackupHooks {
 
     @SubscribeEvent
     public static void onLevelSave(LevelEvent.Save event) {
+        if (!Config.ENABLE_BACKUPS.get()) return;
         if (!(event.getLevel() instanceof ServerLevel level)) return;
         if (!level.dimension().equals(Level.OVERWORLD)) return;
 

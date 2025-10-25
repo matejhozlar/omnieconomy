@@ -26,6 +26,7 @@ public class Config {
     public static final ModConfigSpec.IntValue PLAYTIME_DAILY_CAP;
     public static final ModConfigSpec.BooleanValue NOTIFY_ON_PLAYTIME_REWARD;
     public static final ModConfigSpec.ConfigValue<String> PLAYTIME_REWARD_MESSAGE_FORMAT;
+    public static final ModConfigSpec.BooleanValue PLAYTIME_AFK_INTEGRATION;
 
     public static final ModConfigSpec.BooleanValue ENABLE_MOB_DROPS;
     public static final ModConfigSpec.BooleanValue ENABLE_MOB_DROPS_LIMIT;
@@ -46,6 +47,8 @@ public class Config {
     public static final ModConfigSpec.BooleanValue ENABLE_LOTTERY;
     public static final ModConfigSpec.IntValue LOTTERY_MIN_BET;
     public static final ModConfigSpec.IntValue LOTTERY_COOLDOWN_MINUTES;
+    public static final ModConfigSpec.IntValue LOTTERY_DURATION_SECONDS;
+    public static final ModConfigSpec.BooleanValue LOTTERY_ANNOUNCE_JOIN;
 
     public static final ModConfigSpec.BooleanValue ENABLE_BACKUPS;
     public static final ModConfigSpec.IntValue MAX_BACKUP_FILES;
@@ -141,6 +144,14 @@ public class Config {
                      """)
                 .define("messageFormat", "You received %s%d for being active!");
 
+        PLAYTIME_AFK_INTEGRATION = BUILDER
+                .comment("""
+                        AFKStatus mod required! If you don't have it, dont turn this on!
+                        https://www.curseforge.com/minecraft/mc-mods/afkstatus
+                        If true, players marked as AFK won't be earning playtime rewards.
+                        """)
+                .define("afkIntegration", false);
+
         BUILDER.pop();
 
         BUILDER.push("mobFarming");
@@ -220,6 +231,14 @@ public class Config {
         LOTTERY_COOLDOWN_MINUTES = BUILDER
                 .comment("Cooldown in minutes between lottery creations.")
                 .defineInRange("cooldownMinutes", 15, 0, 1440);
+
+        LOTTERY_DURATION_SECONDS = BUILDER
+                .comment("How long a lottery runs before it auto-resolves (seconds).")
+                .defineInRange("durationSeconds", 120, 10, 3600);
+
+        LOTTERY_ANNOUNCE_JOIN = BUILDER
+                .comment("Public announcements for players joining the lottery.")
+                .define("announcePlayerJoin", false);
 
         BUILDER.pop();
 

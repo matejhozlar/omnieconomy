@@ -2,6 +2,7 @@ package com.saunhardy.omnieconomy.reward;
 
 import com.saunhardy.omnieconomy.Config;
 import com.saunhardy.omnieconomy.core.Economy;
+import com.saunhardy.omnieconomy.integration.AFKIntegration;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
@@ -46,6 +47,11 @@ public final class PlaytimeRewardsManager {
 
         server.getPlayerList().getPlayers().forEach(player -> {
             var id = player.getUUID();
+
+            if (Config.PLAYTIME_AFK_INTEGRATION.get() && AFKIntegration.isAfk(player)) {
+                lastCheckMs.put(id, nowMs);
+                return;
+            }
 
             long last = lastCheckMs.getOrDefault(id, nowMs);
             long elapsed = nowMs - last;

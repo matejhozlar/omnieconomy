@@ -1,4 +1,5 @@
 package com.saunhardy.omnieconomy.events;
+import com.saunhardy.omnieconomy.Config;
 import net.minecraft.ChatFormatting;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -98,7 +99,7 @@ public class StockTickerIntegration {
                         player.sendSystemMessage(Component.translatable("message.omnieconomy.withdrawal_failed").withStyle(ChatFormatting.RED));
                         break;
                     }
-                    player.sendSystemMessage(Component.translatable("message.omnieconomy.withdrawal_success", count, "$" + denomination).withStyle(ChatFormatting.GREEN));
+                    player.sendSystemMessage(Component.translatable("message.omnieconomy.withdrawal_success", count, Config.CURRENCY_SYMBOL.get() + denomination).withStyle(ChatFormatting.GREEN));
                 }
 
                 return allWithdrawalsSucceeded;

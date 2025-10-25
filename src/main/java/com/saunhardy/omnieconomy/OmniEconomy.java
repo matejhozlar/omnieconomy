@@ -3,11 +3,13 @@ package com.saunhardy.omnieconomy;
 import com.mojang.logging.LogUtils;
 import com.saunhardy.omnieconomy.block.ATMBlock;
 import com.saunhardy.omnieconomy.client.ClientOnlyHooks;
+import com.saunhardy.omnieconomy.command.LotteryCommands;
 import com.saunhardy.omnieconomy.command.MoneyCommands;
 import com.saunhardy.omnieconomy.datagen.DataGenerators;
 import com.saunhardy.omnieconomy.enchantment.ModEnchantmentEffects;
 import com.saunhardy.omnieconomy.events.StockTickerIntegration;
 import com.saunhardy.omnieconomy.item.BankCardItem;
+import com.saunhardy.omnieconomy.lottery.LotteryManager;
 import com.saunhardy.omnieconomy.menu.ATMMenu;
 import com.saunhardy.omnieconomy.mobdrops.MobDrops;
 import com.saunhardy.omnieconomy.network.ATMNetworking;
@@ -30,6 +32,8 @@ import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
@@ -40,6 +44,12 @@ import org.slf4j.Logger;
 public class OmniEconomy {
     public static final String MODID = "omnieconomy";
     private static final Logger LOGGER = LogUtils.getLogger();
+    private final LotteryManager lotteryManager = new LotteryManager(
+            Config.ENABLE_LOTTERY,
+            Config.LOTTERY_MIN_BET,
+            Config.LOTTERY_COOLDOWN_MINUTES,
+            Config.LOTTERY_DURATION_SECONDS
+    );
 
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MODID);
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MODID);
@@ -123,6 +133,8 @@ public class OmniEconomy {
         if (FMLEnvironment.dist == Dist.DEDICATED_SERVER) {
             NeoForge.EVENT_BUS.register(MobDrops.class);
             NeoForge.EVENT_BUS.register(MoneyCommands.class);
+            NeoForge.EVENT_BUS.addListener(this::onRegisterCommandsLottery);
+            NeoForge.EVENT_BUS.addListener(this::onServerTickPost);
         }
 
         if (ModList.get().isLoaded("create")) {
@@ -130,9 +142,19 @@ public class OmniEconomy {
             LOGGER.info("Create mod detected - Stock Ticker integration enabled");
         }
 
-        if (Config.ENABLE_BACKUPS.get()) {
-            NeoForge.EVENT_BUS.addListener(BackupHooks::onLevelSave);
-        }
+
+        NeoForge.EVENT_BUS.addListener(BackupHooks::onLevelSave);
+
+    }
+
+    private void onRegisterCommandsLottery(RegisterCommandsEvent event) {
+        if (!Config.ENABLE_LOTTERY.get()) return;
+        LotteryCommands.register(event.getDispatcher(), lotteryManager);
+    }
+
+    private void onServerTickPost(ServerTickEvent.Post e) {
+        if (!Config.ENABLE_LOTTERY.get()) return;
+        lotteryManager.tick(e.getServer());
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) { LOGGER.info("OmniEconomy: common setup"); }
