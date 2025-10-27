@@ -7,6 +7,7 @@
 [![CurseForge](https://img.shields.io/badge/CurseForge-Download-orange?style=flat&logo=curseforge)](https://www.curseforge.com/minecraft/mc-mods/omnieconomy)
 [![Modrinth](https://img.shields.io/badge/Modrinth-Download-green?style=flat&logo=modrinth)](https://modrinth.com/mod/omnieconomy)
 [![NeoForge](https://img.shields.io/badge/NeoForge-Required-blue?style=flat)](https://neoforged.net/)
+[![Downloads](https://img.shields.io/curseforge/dt/1318335?logo=curseforge&label=Downloads&color=F16436&labelColor=2D2D2D)](https://www.curseforge.com/projects/1371365)
 
 ---
 
