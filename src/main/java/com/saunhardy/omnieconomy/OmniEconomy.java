@@ -5,6 +5,7 @@ import com.saunhardy.omnieconomy.block.ATMBlock;
 import com.saunhardy.omnieconomy.client.ClientOnlyHooks;
 import com.saunhardy.omnieconomy.command.LotteryCommands;
 import com.saunhardy.omnieconomy.command.MoneyCommands;
+import com.saunhardy.omnieconomy.command.TelemetryCommands;
 import com.saunhardy.omnieconomy.datagen.DataGenerators;
 import com.saunhardy.omnieconomy.enchantment.ModEnchantmentEffects;
 import com.saunhardy.omnieconomy.events.StockTickerIntegration;
@@ -14,6 +15,7 @@ import com.saunhardy.omnieconomy.menu.ATMMenu;
 import com.saunhardy.omnieconomy.mobdrops.MobDrops;
 import com.saunhardy.omnieconomy.network.ATMNetworking;
 import com.saunhardy.omnieconomy.reward.PlaytimeRewardsManager;
+import com.saunhardy.omnieconomy.telemetry.TelemetryManager;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.flag.FeatureFlags;
@@ -135,6 +137,8 @@ public class OmniEconomy {
             NeoForge.EVENT_BUS.register(MoneyCommands.class);
             NeoForge.EVENT_BUS.addListener(this::onRegisterCommandsLottery);
             NeoForge.EVENT_BUS.addListener(this::onServerTickPost);
+            NeoForge.EVENT_BUS.register(TelemetryManager.class);
+            NeoForge.EVENT_BUS.register(TelemetryCommands.class);
         }
 
         if (ModList.get().isLoaded("create")) {

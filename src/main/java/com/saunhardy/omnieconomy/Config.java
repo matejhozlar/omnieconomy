@@ -53,6 +53,8 @@ public class Config {
     public static final ModConfigSpec.BooleanValue ENABLE_BACKUPS;
     public static final ModConfigSpec.IntValue MAX_BACKUP_FILES;
 
+    public static final ModConfigSpec.BooleanValue ENABLE_TELEMETRY;
+
     static {
         BUILDER.push("general");
 
@@ -251,6 +253,20 @@ public class Config {
         MAX_BACKUP_FILES = BUILDER
                 .comment("Maximum number of backup files to keep.")
                 .defineInRange("maxBackupFiles", 5, 0, 1000);
+
+        BUILDER.pop();
+
+        BUILDER.push("telemetry");
+
+        ENABLE_TELEMETRY = BUILDER
+                .comment(
+                        "Enable anonymous server usage statistics.",
+                        "This helps us understand how many servers use the mod.",
+                        "No personal data, IP addresses, or player information is collected.",
+                        "Only a randomly generated server ID and mod version are sent.",
+                        "You can opt-out at any time by setting this to false."
+                )
+                .define("enableTelemetry", true);
 
         BUILDER.pop();
     }
