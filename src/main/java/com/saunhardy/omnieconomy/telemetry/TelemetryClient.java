@@ -2,9 +2,6 @@ package com.saunhardy.omnieconomy.telemetry;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
@@ -13,7 +10,6 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public class TelemetryClient {
-    private static final Logger LOGGER = LoggerFactory.getLogger("OmniEconomy-Telemetry");
     private static final Gson GSON = new Gson();
 
     private static final String TELEMETRY_ENDPOINT = "http://localhost:5002/api/telemetry";
@@ -30,7 +26,6 @@ public class TelemetryClient {
 
                 return sendRequest(payload);
             } catch (Exception e) {
-                LOGGER.debug("Failed to send heartbeat (this is normal if offline)", e);
                 return false;
             }
         });
@@ -46,13 +41,8 @@ public class TelemetryClient {
                 payload.addProperty("timestamp", System.currentTimeMillis());
                 payload.addProperty("type", "registration");
 
-                boolean success = sendRequest(payload);
-                if (success) {
-                    LOGGER.info("Server registered with telemetry service (ID: {})", serverId);
-                }
-                return success;
+                return sendRequest(payload);
             } catch (Exception e) {
-                LOGGER.debug("Failed to send registration (this is normal if offline)", e);
                 return false;
             }
         });
@@ -78,15 +68,7 @@ public class TelemetryClient {
             }
 
             int responseCode = conn.getResponseCode();
-            boolean success = responseCode >= 200 && responseCode < 300;
-
-            if (success) {
-                LOGGER.debug("Telemetry sent successfully (response: {})", responseCode);
-            } else {
-                LOGGER.debug("Telemetry request failed with response code: {}", responseCode);
-            }
-
-            return success;
+            return responseCode >= 200 && responseCode < 300;
         } finally {
             conn.disconnect();
         }

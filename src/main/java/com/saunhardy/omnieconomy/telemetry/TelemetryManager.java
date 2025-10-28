@@ -23,7 +23,6 @@ public class TelemetryManager {
     @SubscribeEvent
     public static void onServerStarted(ServerStartedEvent event) {
         if (!Config.ENABLE_TELEMETRY.get()) {
-            LOGGER.info("Telemetry is disabled in config");
             return;
         }
 
@@ -80,13 +79,10 @@ public class TelemetryManager {
 
         String modVersion = getModVersion();
 
-        LOGGER.debug("Sending telemetry heartbeat...");
-
         TelemetryClient.sendHeartbeat(serverId, modVersion)
                 .thenAccept(success -> {
                     if (success) {
                         lastHeartbeatMs = System.currentTimeMillis();
-                        LOGGER.debug("Heartbeat sent successfully");
                     }
                 });
     }
@@ -96,16 +92,14 @@ public class TelemetryManager {
             return ModList.get()
                     .getModContainerById("omnieconomy")
                     .map(container -> container.getModInfo().getVersion().toString())
-                    .orElse("uknown");
+                    .orElse("unknown");
         } catch (Exception exception) {
-            LOGGER.warn("Failed to get mod version dynamicall, using fallback", exception);
-            return "uknown";
+            return "unknown";
         }
     }
 
     public static void forceHeartbeat(MinecraftServer server) {
         if (!Config.ENABLE_TELEMETRY.get()) {
-            LOGGER.warn("Cannot send heartbeat - telemetry is disabled");
             return;
         }
         sendHeartbeat(server);
