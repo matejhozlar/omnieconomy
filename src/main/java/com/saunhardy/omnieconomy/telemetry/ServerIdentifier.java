@@ -10,7 +10,8 @@ import java.nio.file.Path;
 import java.util.UUID;
 
 public class ServerIdentifier {
-    private static final String FILE_NAME = "omnieconomy_server_id.dat";
+    private static final String FILE_NAME = "server_id.dat";
+    private static final String DATA_FOLDER = "omnieconomy";
 
     private static UUID cachedServerId = null;
 
@@ -20,7 +21,13 @@ public class ServerIdentifier {
         }
 
         Path worldPath = server.getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT);
-        Path idFile = worldPath.resolve(FILE_NAME);
+        Path dataPath = worldPath.resolve("data").resolve(DATA_FOLDER);
+
+        try {
+            Files.createDirectories(dataPath);
+        } catch (IOException ignored) {}
+
+        Path idFile = dataPath.resolve(FILE_NAME);
 
         if (Files.exists(idFile)) {
             try {
@@ -45,5 +52,4 @@ public class ServerIdentifier {
 
         return cachedServerId;
     }
-
 }
