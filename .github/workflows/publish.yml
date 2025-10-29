@@ -1,5 +1,4 @@
-name: Publish to CurseForge
-
+name: Publish to CurseForge and GitHub
 on:
   workflow_dispatch:
     inputs:
@@ -7,30 +6,26 @@ on:
         description: 'Release'
         required: true
         type: string
-
 jobs:
   publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '21'
-
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
-
       - name: Make Gradle wrapper executable
         run: chmod +x gradlew
-
       - name: Build with Gradle
         run: ./gradlew build
-
-      - name: Publish to CurseForge
+      - name: Publish to CurseForge and GitHub
         uses: Kir-Antipov/mc-publish@v3.3
         with:
           version: ${{ inputs.version }}
@@ -41,6 +36,6 @@ jobs:
           game-versions: 1.21.1
           files: build/libs/!(*-@(dev|sources|javadoc)).jar
           java: 21
-
           curseforge-id: 1371365
           curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
