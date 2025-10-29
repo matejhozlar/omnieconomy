@@ -14,10 +14,10 @@ public class TelemetryCommands {
     @SubscribeEvent
     public static void onRegisterCommands(RegisterCommandsEvent event) {
         event.getDispatcher().register(
-                Commands.literal("omni")
+                Commands.literal("omniecon")
                         .then(Commands.literal("telemetry")
                                 .then(Commands.literal("status")
-                                        .requires(src -> src.hasPermission(2))
+                                        .requires(src -> src.hasPermission(4))
                                         .executes(ctx -> {
                                             boolean enabled = Config.ENABLE_TELEMETRY.get();
                                             var server = ctx.getSource().getServer();

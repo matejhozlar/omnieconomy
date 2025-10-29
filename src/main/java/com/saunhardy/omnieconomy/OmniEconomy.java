@@ -3,6 +3,7 @@ package com.saunhardy.omnieconomy;
 import com.mojang.logging.LogUtils;
 import com.saunhardy.omnieconomy.block.ATMBlock;
 import com.saunhardy.omnieconomy.client.ClientOnlyHooks;
+import com.saunhardy.omnieconomy.command.AdminCommands;
 import com.saunhardy.omnieconomy.command.LotteryCommands;
 import com.saunhardy.omnieconomy.command.MoneyCommands;
 import com.saunhardy.omnieconomy.command.TelemetryCommands;
@@ -139,6 +140,7 @@ public class OmniEconomy {
             NeoForge.EVENT_BUS.addListener(this::onServerTickPost);
             NeoForge.EVENT_BUS.register(TelemetryManager.class);
             NeoForge.EVENT_BUS.register(TelemetryCommands.class);
+            NeoForge.EVENT_BUS.register(AdminCommands.class);
         }
 
         if (ModList.get().isLoaded("create")) {
