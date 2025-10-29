@@ -1,25 +1,38 @@
-# Version 0.1.2
+# Version 0.1.3
 
 ## New Features
 
-### Anonymous Telemetry System
-- Added optional anonymous telemetry to help track mod usage and improve future development
-- Telemetry collects only:
-    - Unique anonymous server ID (randomly generated UUID stored locally)
-    - Mod version
-    - Minecraft version
-    - Server heartbeat (sent hourly when enabled)
-- **Privacy First**:
-    - Completely anonymous - no server names, player data, or identifying information
-    - Can be disabled at any time via config (`enableTelemetry = false` in `omnieconomy-common.toml`)
-    - Runs silently in the background with no console spam
-    - Fails gracefully if offline or unreachable
-- Server ID is stored locally in `omnieconomy_server_id.dat` in your world folder
-- Helps developers understand active installations and version distribution
+### Admin Management Commands
+- Added comprehensive `/omniecon admin` command suite for server administrators
+- **Available Admin Commands**:
+  - `/omniecon admin give <player> <amount>` - Give money to a player
+  - `/omniecon admin take <player> <amount>` - Remove money from a player's balance
+  - `/omniecon admin set <player> <amount>` - Set a player's balance to a specific amount
+  - `/omniecon admin balance <player>` - Check any player's balance
+  - `/omniecon admin resetdaily <player>` - Reset a player's daily reward cooldown
+  - `/omniecon admin resetplaytime <player>` - Reset a player's playtime earnings cap for the day
+- **Permission System**: All admin commands require OP level 4
+- **Feedback System**:
+  - Admins receive confirmation messages when executing commands
+  - Affected players receive notifications about balance changes
+  - Other online operators are notified of admin actions
 
-## Bug Fixes
-- Fixed visual client bugs occurring on ATM
+### Interactive Help System
+- Added `/omniecon help` command accessible to all players
+- **Smart Display**:
+  - Shows all available player commands (based on config settings)
+  - Displays admin commands only to operators
+  - Automatically filters commands based on enabled features (lottery, daily, rewards, etc.)
+- **Clickable Commands**:
+  - Color-coded common categories (Player, Lottery, Admin, Telemetry)
+  - Clean headers and separators for easy navigation
+  - Shows current currency symbol in footer
+
+## Improvements
+- Enhanced user experience with interactive command discovery
+- Streamlined admin workflow for server management
+- Better permission handling for administrative functions
 
 ## Configuration
-- New config option: `enableTelemetry` (default: true)
-    - Set to `false` in `omnieconomy-common.toml` to completely disable telemetry
+- Admin commands respect all existing feature toggles (daily rewards, lottery, telemetry, etc.)
+- No new configuration options required - works with existing settings
