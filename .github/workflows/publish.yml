@@ -36,6 +36,6 @@ jobs:
           game-versions: 1.21.1
           files: build/libs/!(*-@(dev|sources|javadoc)).jar
           java: 21
-#          curseforge-id: 1371365
-#          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+          curseforge-id: 1371365
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
