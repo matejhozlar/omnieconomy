@@ -4,7 +4,9 @@
 
 [![CurseForge](https://img.shields.io/curseforge/dt/1371365?logo=curseforge&label=Downloads&color=F16436)](https://www.curseforge.com/minecraft/mc-mods/omnieconomy)
 [![Modrinth](https://img.shields.io/badge/Modrinth-Download-green?style=flat&logo=modrinth)](https://modrinth.com/mod/omnieconomy)
+[![Servers](https://omnieconomy.xyz/api/telemetry/badge)](https://omnieconomy.com)
 [![NeoForge](https://img.shields.io/badge/NeoForge-21.1.213+-blue?style=flat)](https://neoforged.net/)
+
 
 ---
 
